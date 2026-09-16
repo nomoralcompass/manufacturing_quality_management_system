@@ -2,7 +2,8 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 from quality.statistics import (
     calculate_subgroup_statistics,
-    calculate_control_limits
+    calculate_control_limits,
+    detect_out_of_control
 )
 
 
@@ -34,6 +35,13 @@ def control_limits(request: MeasurementRequest):
     return {
         "control_limits": limits
     }
+
+    return {
+        "results": results
+    }
+@app.post("/detect-out-of-control")
+def detect_control(request: MeasurementRequest):
+    results = detect_out_of_control(request.measurements)
 
     return {
         "results": results

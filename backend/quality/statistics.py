@@ -52,3 +52,43 @@ def calculate_control_limits(measurements):
             "lcl": round(float(r_lcl), 4)
         }
     }
+def detect_out_of_control(measurements):
+    subgroup_stats = calculate_subgroup_statistics(measurements)
+    limits = calculate_control_limits(measurements)
+
+    x_ucl = limits["x_bar"]["ucl"]
+    x_lcl = limits["x_bar"]["lcl"]
+
+    r_ucl = limits["range"]["ucl"]
+    r_lcl = limits["range"]["lcl"]
+
+    results = []
+
+    for subgroup in subgroup_stats:
+        mean = subgroup["mean"]
+        subgroup_range = subgroup["range"]
+
+        x_bar_status = "in_control"
+        r_status = "in_control"
+
+        if mean > x_ucl or mean < x_lcl:
+            x_bar_status = "out_of_control"
+
+        if subgroup_range > r_ucl or subgroup_range < r_lcl:
+            r_status = "out_of_control"
+
+        overall_status = "in_control"
+
+        if x_bar_status == "out_of_control" or r_status == "out_of_control":
+            overall_status = "out_of_control"
+
+        results.append({
+            "subgroup": subgroup["subgroup"],
+            "mean": mean,
+            "range": subgroup_range,
+            "x_bar_status": x_bar_status,
+            "range_status": r_status,
+            "overall_status": overall_status
+        })
+
+    return results
