@@ -1,1 +1,0 @@
-# manufacturing_quality_management_system
