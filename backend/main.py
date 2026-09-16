@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from quality.statistics import (
     calculate_subgroup_statistics,
@@ -30,34 +30,62 @@ def home():
 
 @app.post("/calculate")
 def calculate(request: MeasurementRequest):
-    results = calculate_subgroup_statistics(request.measurements)
+    try:
+        results = calculate_subgroup_statistics(request.measurements)
+
+        return {
+            "results": results
+        }
+
+    except ValueError as error:
+        raise HTTPException(
+            status_code=400,
+            detail=str(error)
+        )
 
 @app.post("/control-limits")
 def control_limits(request: MeasurementRequest):
-    limits = calculate_control_limits(request.measurements)
+    try:
+        limits = calculate_control_limits(request.measurements)
 
-    return {
-        "control_limits": limits
-    }
+        return {
+            "control_limits": limits
+        }
 
-    return {
-        "results": results
-    }
+    except ValueError as error:
+        raise HTTPException(
+            status_code=400,
+            detail=str(error)
+        )
 @app.post("/detect-out-of-control")
 def detect_control(request: MeasurementRequest):
-    results = detect_out_of_control(request.measurements)
+    try:
+        results = detect_out_of_control(request.measurements)
 
-    return {
-        "results": results
-    }
+        return {
+            "results": results
+        }
+
+    except ValueError as error:
+        raise HTTPException(
+            status_code=400,
+            detail=str(error)
+        )
 @app.post("/process-capability")
 def process_capability(request: CapabilityRequest):
-    result = calculate_process_capability(
-        request.measurements,
-        request.usl,
-        request.lsl
-    )
+    try:
+        result = calculate_process_capability(
+            request.measurements,
+            request.usl,
+            request.lsl
+        )
 
-    return {
-        "process_capability": result
-    }
+        return {
+            "process_capability": result
+        }
+
+    except ValueError as error:
+        raise HTTPException(
+            status_code=400,
+            detail=str(error)
+        )

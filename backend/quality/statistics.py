@@ -6,8 +6,25 @@ A2 = 0.577
 D3 = 0
 D4 = 2.114
 
+def validate_measurements(measurements):
+    if not measurements:
+        raise ValueError("Measurements cannot be empty.")
+
+    if any(len(subgroup) == 0 for subgroup in measurements):
+        raise ValueError("Subgroups cannot be empty.")
+
+    subgroup_sizes = {len(subgroup) for subgroup in measurements}
+
+    if len(subgroup_sizes) != 1:
+        raise ValueError("All subgroups must contain the same number of measurements.")
+
+    if len(subgroup_sizes) != 1 or list(subgroup_sizes)[0] != 5:
+        raise ValueError("Currently, subgroup size must be 5.")
+
 
 def calculate_subgroup_statistics(measurements):
+    validate_measurements(measurements)
+
     results = []
 
     for index, subgroup in enumerate(measurements, start=1):
@@ -26,6 +43,8 @@ def calculate_subgroup_statistics(measurements):
 
 
 def calculate_control_limits(measurements):
+    validate_measurements(measurements)
+
     subgroup_stats = calculate_subgroup_statistics(measurements)
 
     means = [item["mean"] for item in subgroup_stats]
@@ -53,6 +72,8 @@ def calculate_control_limits(measurements):
         }
     }
 def detect_out_of_control(measurements):
+    validate_measurements(measurements)
+
     subgroup_stats = calculate_subgroup_statistics(measurements)
     limits = calculate_control_limits(measurements)
 
@@ -93,6 +114,12 @@ def detect_out_of_control(measurements):
 
     return results
 def calculate_process_capability(measurements, usl, lsl):
+    validate_measurements(measurements)
+
+    if usl <= lsl:
+        raise ValueError("USL must be greater than LSL.")
+
+    # existing code...
     """
     Calculate Cp and Cpk for a manufacturing process.
 
@@ -107,6 +134,8 @@ def calculate_process_capability(measurements, usl, lsl):
 
     mean = np.mean(values)
     std_dev = np.std(values, ddof=1)
+    if std_dev == 0:
+        raise ValueError("Standard deviation must be greater than zero.")
 
     cp = (usl - lsl) / (6 * std_dev)
 
