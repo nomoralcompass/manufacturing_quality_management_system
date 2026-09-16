@@ -92,3 +92,36 @@ def detect_out_of_control(measurements):
         })
 
     return results
+def calculate_process_capability(measurements, usl, lsl):
+    """
+    Calculate Cp and Cpk for a manufacturing process.
+
+    usl = Upper Specification Limit
+    lsl = Lower Specification Limit
+    """
+
+    values = np.array(
+        [value for subgroup in measurements for value in subgroup],
+        dtype=float
+    )
+
+    mean = np.mean(values)
+    std_dev = np.std(values, ddof=1)
+
+    cp = (usl - lsl) / (6 * std_dev)
+
+    cpu = (usl - mean) / (3 * std_dev)
+    cpl = (mean - lsl) / (3 * std_dev)
+
+    cpk = min(cpu, cpl)
+
+    return {
+        "mean": round(float(mean), 4),
+        "standard_deviation": round(float(std_dev), 4),
+        "usl": usl,
+        "lsl": lsl,
+        "cp": round(float(cp), 4),
+        "cpu": round(float(cpu), 4),
+        "cpl": round(float(cpl), 4),
+        "cpk": round(float(cpk), 4)
+    }

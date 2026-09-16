@@ -3,9 +3,13 @@ from pydantic import BaseModel
 from quality.statistics import (
     calculate_subgroup_statistics,
     calculate_control_limits,
-    detect_out_of_control
+    detect_out_of_control,
+    calculate_process_capability
 )
-
+class CapabilityRequest(BaseModel):
+    measurements: list[list[float]]
+    usl: float
+    lsl: float
 
 app = FastAPI(
     title="Manufacturing Quality Management System"
@@ -45,4 +49,15 @@ def detect_control(request: MeasurementRequest):
 
     return {
         "results": results
+    }
+@app.post("/process-capability")
+def process_capability(request: CapabilityRequest):
+    result = calculate_process_capability(
+        request.measurements,
+        request.usl,
+        request.lsl
+    )
+
+    return {
+        "process_capability": result
     }
